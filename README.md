@@ -16,6 +16,6 @@
 
 ## Limitations
 - Does not run in raw terminal mode. So no arrow keys usage, Ctrl-C Ctrl-D interrupts or even backspace handling
-- No built-in history command
+- No built-in history command, no reverse-i-search and other functionalities.
 - Minor syntax problems (such as not parsing properly when we didnt give space in redirections)
 
