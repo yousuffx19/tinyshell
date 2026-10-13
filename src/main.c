@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/wait.h>
 #include "parser.h"
@@ -9,9 +10,83 @@
 char command_buffer[100]; 
 char CWD[100];
 
+int setup_redirections(char *tokens[], int num_tokens, char *command_args[]){
+        int num_redirs = 0;
+	int fd;
+        for(int i = 0; i < num_tokens; i++)
+        {	
+		if(i < num_tokens - 1){
+		if(!strcmp(tokens[i], ">")){
+			if((fd = open(tokens[i+1], O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0){
+				printf("Error in opening file: %s\n", tokens[i+1]);
+				exit(1);
+			}
+			dup2(fd, STDOUT_FILENO);
+			close(fd);
+                        num_redirs++;
+                }
+		if(!strcmp(tokens[i], ">>")){
+                        if((fd = open(tokens[i+1], O_WRONLY|O_CREAT|O_APPEND, 0644)) < 0){
+                                printf("Error in opening file: %s\n", tokens[i+1]);
+                                exit(1);
+                        }
+			dup2(fd, STDOUT_FILENO);
+			close(fd);
+                        num_redirs++;
+                }
+		if(!strcmp(tokens[i], "2>")){
+                        if((fd = open(tokens[i+1], O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0){
+                                printf("Error in opening file: %s\n", tokens[i+1]);
+                                exit(1);
+                        }
+                        dup2(fd, STDERR_FILENO);
+			close(fd);
+                        num_redirs++;
+                }
+		if(!strcmp(tokens[i], "2>>")){
+                        if((fd = open(tokens[i+1], O_WRONLY|O_CREAT|O_APPEND, 0644)) < 0){
+                                printf("Error in opening file: %s\n", tokens[i+1]);
+                                exit(1);
+                        }
+                        dup2(fd, STDERR_FILENO);
+			close(fd);
+                        num_redirs++;
+                }
+		if(!strcmp(tokens[i], "&>") && !strcmp(tokens[i], ">&")){
+                        if((fd = open(tokens[i+1], O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0){
+                                printf("Error in opening file: %s\n", tokens[i+1]);
+                                exit(1);
+                        }
+                        dup2(fd, STDOUT_FILENO);
+			dup2(fd, STDERR_FILENO);
+                        num_redirs++;
+                }
+		if(!strcmp(tokens[i], "<")){
+                        if((fd = open(tokens[i+1], O_RDONLY, 0644)) < 0){
+                                printf("Error in opening file: %s\n", tokens[i+1]);
+                                exit(1);
+                        }
+                        dup2(fd, STDIN_FILENO);
+                        num_redirs++;
+                }
+		}
+		if(num_redirs == 0){
+			command_args[i] = malloc(32);
+			strcpy(command_args[i], tokens[i]);
+			command_args[i+1] = NULL;
+		}
+        }
+        return num_redirs;
+}
+
 void exec_command(char *command){
+	int spaces = strip_start_space(command);
+	command += spaces;
+	strip_end_space(command);
+	char *tokens[30];
 	char *args[20];
-	get_tokens(command, args);
+	int num_tokens = get_tokens(command, tokens);
+	setup_redirections(tokens, num_tokens, args);
         execvp(args[0], args);
 	printf("Invalid Command\n");
 	exit(1);

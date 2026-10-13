@@ -48,3 +48,5 @@ int setup_pipes(char *command, char *sub_commands[]){
 	sp++;
 	return sp;	
 }
+
+
