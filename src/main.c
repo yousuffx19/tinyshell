@@ -6,8 +6,9 @@
 #include <sys/wait.h>
 #include "parser.h"
 #include "utils.h"
+#include "terminal.h"
 
-char command_buffer[100]; 
+char command_buffer[1024]; 
 char CWD[100];
 
 int setup_redirections(char *tokens[], int num_tokens, char *command_args[]){
@@ -97,8 +98,9 @@ int main(){
 	getcwd(CWD, 100);
 	while(1){
 	printf("\e[0;35mtinyshell:\033[0m%s > ", CWD);
-	fgets(command_buffer, 100, stdin);
-	command_buffer[strlen(command_buffer)-1] = '\0';
+	fflush(stdout);
+	read_input(command_buffer);
+	command_buffer[strlen(command_buffer)] = '\0';
 	int is_cd = set_working_directory(command_buffer);
 	if(is_cd == -1){
 		printf("Invalid path\n");

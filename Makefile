@@ -2,7 +2,7 @@ CC = gcc
 
 TARGET = test
 FLAGS = -Wall -Wextra
-SOURCES = src/main.c src/parser.c src/utils.c
+SOURCES = src/main.c src/parser.c src/utils.c src/terminal.c
 
 $(TARGET): $(SOURCES)
 	$(CC) $(FLAGS) $(SOURCES) -o $(TARGET)
