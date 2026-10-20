@@ -104,10 +104,12 @@ int main(){
 	int is_cd = set_working_directory(command_buffer);
 	if(is_cd == -1){
 		printf("Invalid path\n");
+		save_to_history(command_buffer);
 		continue;
 	}
 	else if(is_cd == 1){
 		getcwd(CWD, 100);
+		save_to_history(command_buffer);
 		continue;
 	}
 	if(!strcmp(command_buffer, "exit")){
@@ -147,6 +149,7 @@ int main(){
 	}
 	int status = 0;
 	while(wait(&status) > 0);
+	save_to_history(command_buffer);
 	}
 	return 0;
 }

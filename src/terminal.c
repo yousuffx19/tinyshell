@@ -7,7 +7,36 @@
 
 struct termios original;
 char input_buffer[1024];
+char history_buffer[1024][1024];
 int cursor;
+int history_cursor = 0;
+int history_length = 0;
+
+void save_to_history(char *command){
+	if(history_length > 1024){
+		history_length = 0;
+	}
+	strcpy(history_buffer[history_length], command);
+	history_length++;
+	history_cursor = history_length;
+}
+
+void get_last_command(char *buffer){
+	if(history_cursor > 0){
+		strcpy(buffer, history_buffer[history_cursor-1]);
+		history_cursor--;
+	}
+}
+
+void get_next_command(char *buffer){
+	if(history_cursor < history_length){
+		strcpy(buffer, history_buffer[history_cursor+1]);
+		history_cursor++;
+	}
+	if(history_cursor == history_length){
+		strcpy(buffer, "\0");
+	}
+}
 
 void disable_raw_mode(){
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &original);
@@ -24,6 +53,14 @@ void handle_escape(){
 	if(!strcmp(seq, "[C\0")){
 		if(cursor < (int) strlen(input_buffer)){
 		cursor++;}
+	}
+	if(!strcmp(seq, "[A\0")){
+		get_last_command(input_buffer);
+		cursor = strlen(input_buffer);
+	}
+	if(!strcmp(seq, "[B\0")){
+		get_next_command(input_buffer);
+		cursor = strlen(input_buffer);
 	}
 }
 
