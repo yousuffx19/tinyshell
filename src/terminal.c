@@ -16,6 +16,9 @@ void save_to_history(char *command){
 	if(history_length > 1024){
 		history_length = 0;
 	}
+	if(history_length > 0 && !strcmp(history_buffer[history_length-1], command)){
+		return;
+	}
 	strcpy(history_buffer[history_length], command);
 	history_length++;
 	history_cursor = history_length;
