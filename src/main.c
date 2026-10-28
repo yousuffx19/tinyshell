@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include "parser.h"
 #include "utils.h"
@@ -93,6 +94,11 @@ void exec_command(char *command){
 	exit(1);
 }
 
+void stop_exec(int x){
+	x++;
+	exit(1);
+}
+
 int main(){
 	printf("\033[H\033[2J");
 	getcwd(CWD, 100);
@@ -101,6 +107,7 @@ int main(){
 	fflush(stdout);
 	read_input(command_buffer);
 	command_buffer[strlen(command_buffer)] = '\0';
+	signal(SIGINT, SIG_IGN);
 	int is_cd = set_working_directory(command_buffer);
 	if(is_cd == -1){
 		printf("Invalid path\n");
@@ -125,6 +132,7 @@ int main(){
 		}
 		pid_t p = fork();
 		if(p == 0){
+			signal(SIGINT, stop_exec);
 			if(prev_read != -1){
 				dup2(prev_read, STDIN_FILENO);
 				close(prev_read);

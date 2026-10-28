@@ -92,7 +92,7 @@ void read_input(char *command_buffer){
 	cursor = 0;
 	tcgetattr(STDIN_FILENO, &original);
 	raw = original;
-	raw.c_lflag &= ~(ECHO | ICANON);
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	atexit(disable_raw_mode);
 	input_buffer[0] = '\0';
